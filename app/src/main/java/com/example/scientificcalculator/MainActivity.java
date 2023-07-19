@@ -3,30 +3,62 @@ package com.example.scientificcalculator;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
+import android.content.pm.ActivityInfo;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
     TextView input, signBox;
 
-    String sign, value1, value2;
+    String sign, value1, value2,op;
     Double num1, num2, result;
+    ImageButton history;
     boolean hasDot;
     List<String> historyList = new ArrayList<String>();
 
+    DataBaseHandler dataBaseHandler=new DataBaseHandler(this);
+
+    @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        setRequestedOrientation (ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
         input = (TextView) findViewById(R.id.input);
         signBox = (TextView) findViewById(R.id.sign);
+
+        history=(ImageButton) findViewById(R.id.histroy);
+
+        history.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Refresh_Feed();
+                Set_history();
+            }
+        });
+
+        history.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+
+                //nead to implement LongClickListener for History to show all History
+
+                return true;
+            }
+        });
 
         hasDot = false;
 
@@ -143,6 +175,7 @@ public class MainActivity extends AppCompatActivity {
                 default:
                     break;
                 case "+":
+                    op="+";
                     value2 = input.getText().toString();
                     num1 = Double.parseDouble(value1);
                     num2 = Double.parseDouble(value2);
@@ -152,6 +185,7 @@ public class MainActivity extends AppCompatActivity {
                     signBox.setText(null);
                     break;
                 case "-":
+                    op="-";
                     value2 = input.getText().toString();
                     num1 = Double.parseDouble(value1);
                     num2 = Double.parseDouble(value2);
@@ -161,6 +195,7 @@ public class MainActivity extends AppCompatActivity {
                     signBox.setText(null);
                     break;
                 case "*":
+                    op="*";
                     value2 = input.getText().toString();
                     num1 = Double.parseDouble(value1);
                     num2 = Double.parseDouble(value2);
@@ -170,6 +205,7 @@ public class MainActivity extends AppCompatActivity {
                     signBox.setText(null);
                     break;
                 case "/":
+                    op="/";
                     value2 = input.getText().toString();
                     num1 = Double.parseDouble(value1);
                     num2 = Double.parseDouble(value2);
@@ -179,7 +215,9 @@ public class MainActivity extends AppCompatActivity {
                     signBox.setText(null);
                     break;
             }
-        }historyList = Collections.singletonList(result.toString());
+            dataBaseHandler.insertData(num1,op,num2,result);
+            //historyList = Collections.singletonList(result.toString());
+        }
     }
 
 
@@ -210,7 +248,26 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    public void btnClick_history(View view) {
-        signBox.setText(historyList.indexOf(0));
+
+    private void Set_history() {
+
+        for (Object i:historyList){
+            signBox.setText((CharSequence) i);
+        }
+    }
+
+    public  void Refresh_Feed(){
+        Cursor c1 = dataBaseHandler.getData();
+        if (c1.moveToFirst()) {
+            do{
+                @SuppressLint("Range") String num1 = c1.getString(c1.getColumnIndex("num1"));
+                @SuppressLint("Range") String num2 = c1.getString(c1.getColumnIndex("num2"));
+                @SuppressLint("Range") String op = c1.getString(c1.getColumnIndex("op"));
+                @SuppressLint("Range") String result = c1.getString(c1.getColumnIndex("result"));
+                String output= num1+" "+op+" "+num2+" ="+result;
+                historyList.add(output);
+                System.out.println(output);
+            }while(c1.moveToNext());
+        }
     }
 }
