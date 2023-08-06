@@ -5,10 +5,13 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.text.method.ScrollingMovementMethod;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
+import android.widget.ListView;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
@@ -19,7 +22,9 @@ public class MainActivity extends AppCompatActivity {
     Double num1, num2, result;
     ImageButton history;
     boolean hasDot;
+ListView list;
     List<String> historyList = new ArrayList<String>();
+    List<String> Rev_historyList = new ArrayList<String>();
 
     DataBaseHandler dataBaseHandler=new DataBaseHandler(this);
 
@@ -32,16 +37,18 @@ public class MainActivity extends AppCompatActivity {
 
         input = (TextView) findViewById(R.id.input);
         signBox = (TextView) findViewById(R.id.sign);
-
-        loadDoc();
+        list =(ListView) findViewById(R.id.list);
+        //loadDoc();
 
         history=(ImageButton) findViewById(R.id.history);
 
         history.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
                 Refresh_Feed();
-                Set_history();
+                //Set_history();
+                Set_Listview();
             }
         });
 
@@ -56,7 +63,6 @@ public class MainActivity extends AppCompatActivity {
             s += "Line: " + String.valueOf(x) + "\n";
         }
 
-        signBox.setMovementMethod(new ScrollingMovementMethod());
 
         signBox.setText(s);
     }
@@ -214,7 +220,9 @@ public class MainActivity extends AppCompatActivity {
                     break;
             }
             dataBaseHandler.insertData(num1,op,num2,result);
-            //historyList = Collections.singletonList(result.toString());
+            Refresh_Feed();
+            Set_Listview();
+
         }
     }
 
@@ -245,11 +253,19 @@ public class MainActivity extends AppCompatActivity {
         hasDot = false;
     }
 
+    private void Set_Listview(){
+        Collections.reverse(historyList);
+        ArrayAdapter<String> arr;
+        arr = new ArrayAdapter<String>(this, R.layout.support_simple_spinner_dropdown_item, historyList);
+        list.setAdapter(arr);
+    }
+    /*
     private void Set_history() {
         for (Object i:historyList){
             signBox.setText((CharSequence) i);
         }
     }
+     */
 
     public  void Refresh_Feed(){
         Cursor c1 = dataBaseHandler.getData();
