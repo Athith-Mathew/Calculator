@@ -1,17 +1,18 @@
 package com.example.scientificcalculator;
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.text.method.ScrollingMovementMethod;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
-import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
@@ -22,9 +23,7 @@ public class MainActivity extends AppCompatActivity {
     Double num1, num2, result;
     ImageButton history;
     boolean hasDot;
-ListView list;
     List<String> historyList = new ArrayList<String>();
-    List<String> Rev_historyList = new ArrayList<String>();
 
     DataBaseHandler dataBaseHandler=new DataBaseHandler(this);
 
@@ -37,36 +36,19 @@ ListView list;
 
         input = (TextView) findViewById(R.id.input);
         signBox = (TextView) findViewById(R.id.sign);
-        list =(ListView) findViewById(R.id.list);
-        //loadDoc();
 
         history=(ImageButton) findViewById(R.id.history);
 
         history.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
                 Refresh_Feed();
-                //Set_history();
-                Set_Listview();
+                Set_history();
             }
         });
 
         hasDot = false;
     }
-
-    private void loadDoc() {
-
-        String s = "";
-
-        for(int x=0; x<=100; x++) {
-            s += "Line: " + String.valueOf(x) + "\n";
-        }
-
-
-        signBox.setText(s);
-    }
-
     @SuppressLint("SetTextI18n")
     public void btnClick_0(View view) {
         input.setText(input.getText() + "0");
@@ -220,13 +202,24 @@ ListView list;
                     break;
             }
             dataBaseHandler.insertData(num1,op,num2,result);
-            Refresh_Feed();
-            Set_Listview();
-
+            //historyList = Collections.singletonList(result.toString());
         }
     }
 
+    public void openGoogleLens(View view) {
+        // Package name of Google Lens
+        String packageName = "com.google.ar.lens";
 
+        PackageManager packageManager = getPackageManager();
+        Intent intent = packageManager.getLaunchIntentForPackage(packageName);
+
+        if (intent != null) {
+            startActivity(intent);
+        } else {
+            // Handle case when Google Lens is not installed
+            Toast.makeText(this, "Google Lens not installed on your device.", Toast.LENGTH_SHORT).show();
+        }
+    }
     public void btnClick_delete(View view) {
         if (input.getText().equals("")) {
             input.setText(null);
@@ -253,19 +246,11 @@ ListView list;
         hasDot = false;
     }
 
-    private void Set_Listview(){
-        Collections.reverse(historyList);
-        ArrayAdapter<String> arr;
-        arr = new ArrayAdapter<String>(this, R.layout.support_simple_spinner_dropdown_item, historyList);
-        list.setAdapter(arr);
-    }
-    /*
     private void Set_history() {
         for (Object i:historyList){
             signBox.setText((CharSequence) i);
         }
     }
-     */
 
     public  void Refresh_Feed(){
         Cursor c1 = dataBaseHandler.getData();
