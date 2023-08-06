@@ -1,27 +1,20 @@
 package com.example.scientificcalculator;
-
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.annotation.SuppressLint;
 import android.content.pm.ActivityInfo;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.text.method.ScrollingMovementMethod;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
-
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
+import androidx.appcompat.app.AppCompatActivity;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
     TextView input, signBox;
-
+    private static final int CAMERA_REQUEST = 1888;
     String sign, value1, value2,op;
     Double num1, num2, result;
     ImageButton history;
@@ -40,7 +33,9 @@ public class MainActivity extends AppCompatActivity {
         input = (TextView) findViewById(R.id.input);
         signBox = (TextView) findViewById(R.id.sign);
 
-        history=(ImageButton) findViewById(R.id.histroy);
+        loadDoc();
+
+        history=(ImageButton) findViewById(R.id.history);
 
         history.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -50,18 +45,20 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        history.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View view) {
-
-                //nead to implement LongClickListener for History to show all History
-
-                return true;
-            }
-        });
-
         hasDot = false;
+    }
 
+    private void loadDoc() {
+
+        String s = "";
+
+        for(int x=0; x<=100; x++) {
+            s += "Line: " + String.valueOf(x) + "\n";
+        }
+
+        signBox.setMovementMethod(new ScrollingMovementMethod());
+
+        signBox.setText(s);
     }
 
     @SuppressLint("SetTextI18n")
@@ -164,10 +161,11 @@ public class MainActivity extends AppCompatActivity {
 
     @SuppressLint("SetTextI18n")
     public void btnClick_equal(View view) {
+        String val = input.getText().toString();
         if (sign == null) {
-            signBox.setText("Error!");
+            signBox.setText(val);
         } else if (input.getText().equals("")) {
-            signBox.setText("Error!");
+            signBox.setText("0");
         } else if ((sign.equals("+") || sign.equals("-") || sign.equals("*") || sign.equals("/")) && value1.equals("")) {
             signBox.setText("Error!");
         } else {
@@ -247,10 +245,7 @@ public class MainActivity extends AppCompatActivity {
         hasDot = false;
     }
 
-
-
     private void Set_history() {
-
         for (Object i:historyList){
             signBox.setText((CharSequence) i);
         }
@@ -270,4 +265,5 @@ public class MainActivity extends AppCompatActivity {
             }while(c1.moveToNext());
         }
     }
+
 }
