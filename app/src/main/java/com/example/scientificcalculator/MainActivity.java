@@ -1,18 +1,29 @@
 package com.example.scientificcalculator;
 
+import static android.content.ClipDescription.MIMETYPE_TEXT_PLAIN;
 import static com.example.scientificcalculator.calculate.calculateM;
 
 import android.annotation.SuppressLint;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.database.Cursor;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -23,6 +34,8 @@ public class MainActivity extends AppCompatActivity {
     ImageButton history;
     boolean hasDot;
     ListView list;
+    List<String> historyList = new ArrayList<String>();
+    DataBaseHandler db=new DataBaseHandler(this);
 
     @SuppressLint({"MissingInflatedId", "SourceLockedOrientationActivity"})
     @Override
@@ -38,10 +51,29 @@ public class MainActivity extends AppCompatActivity {
         history= findViewById(R.id.history);
 
         history.setOnClickListener(view -> {
-            //Codes for history Actions.
+
+            Refresh_Feed();
+            //Set_history();
+            Set_Listview();
         });
 
         hasDot = false;
+    }
+    public  void Refresh_Feed(){
+        Cursor c1 = db.getData();
+        if (c1.moveToFirst()) {
+            do{
+                @SuppressLint("Range") String result = c1.getString(c1.getColumnIndex("result"));
+                historyList.add(result);
+            }while(c1.moveToNext());
+        }
+    }
+
+    private void Set_Listview(){
+        Collections.reverse(historyList);
+        ArrayAdapter<String> arr;
+        arr = new ArrayAdapter<String>(this, R.layout.support_simple_spinner_dropdown_item, historyList);
+        list.setAdapter(arr);
     }
 
     @SuppressLint("SetTextI18n")
@@ -229,7 +261,14 @@ public class MainActivity extends AppCompatActivity {
 
     @SuppressLint("SetTextI18n")
     public void btnClick_equal(View view) {
-        cal();
+        String result = calculateM(input.getText().toString());
+        if (result.equals("Invalid expression")){
+            signBox.setText("Invalid expression");
+        }else{
+            signBox.setText(result);
+            db.insertData(value1+" = "+result);
+            System.out.println(value1+" = "+result);
+        }
         input.setText("");
         value1.delete(0,value1.length());
 
@@ -286,8 +325,32 @@ public class MainActivity extends AppCompatActivity {
             // If the Google Lens app is installed, launch it
             startActivity(lensIntent);
         } else {
+            pasteText();
             // If the Google Lens app is not installed, you can provide an alternative action or inform the user
             Toast.makeText(this, "Google Lens app is not installed", Toast.LENGTH_SHORT).show();
+        }
+    }
+    private void pasteText() {
+        ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+        String pasteData = "";
+
+        // If it does contain data, decide if you can handle the data.
+        if (!(clipboard.hasPrimaryClip())) {
+
+        } else if (!(clipboard.getPrimaryClipDescription().hasMimeType(MIMETYPE_TEXT_PLAIN))) {
+
+            // since the clipboard has data but it is not plain text
+
+        } else {
+
+            //since the clipboard contains plain text.
+            ClipData.Item item = clipboard.getPrimaryClip().getItemAt(0);
+
+            // Gets the clipboard as text.
+            pasteData = item.getText().toString();
+
+            input.setText(pasteData);
+            Log.i("PastedText", "text: " + pasteData);
         }
     }
 }

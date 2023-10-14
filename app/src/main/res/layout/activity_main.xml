@@ -20,7 +20,7 @@
     </ScrollView>
 
 
-    <TextView
+    <EditText
         android:id="@+id/input"
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -28,6 +28,9 @@
         android:gravity="center|end"
         android:hint="0"
         android:maxLength="14"
+        android:focusableInTouchMode="true"
+        android:cursorVisible="false"
+        android:focusable="false"
         android:padding="10dp"
         android:textColor="@color/colorTextonPrimary"
         android:textColorHint="@color/colorTextonSecondary"
