@@ -28,6 +28,7 @@ public class calculate {
             }
 
             double parse() {
+
                 nextChar();
                 double x = parseExpression();
                 if (pos < str.length()) {
